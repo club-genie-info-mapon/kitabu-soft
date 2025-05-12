@@ -1,19 +1,32 @@
 from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QLabel,
-    QLineEdit, QPushButton, QMessageBox, QSpacerItem, QSizePolicy, QHBoxLayout
+    QLineEdit, QPushButton, QMessageBox, QSpacerItem, QSizePolicy, QHBoxLayout, QCheckBox
 )
 from PyQt5.QtGui import QFont, QIcon
 from PyQt5.QtCore import Qt
-
+import os
 from src.main import MainWindow
+from src.utils.languages import load_translations
+from src.utils.helpers import resource_path
+
 
 class LoginWindow(QMainWindow):
     def __init__(self):
-        super().__init__()
-        self.setWindowTitle("Connexion - Bibliothèque")
-        self.setGeometry(100, 100, 500, 550)
-        self.setWindowIcon(QIcon("src/assets/icon.png"))  # Assurez-vous que le chemin est correct
+        """
+        Initialize the login window with the given language.
+        """
+        super().__init__() 
+        self.translations = load_translations().get("LoginWindow")
+        self.setWindowTitle(self.translations.get("title"))
+        self.setGeometry(100, 100, 550, 550)
+        icon_path = resource_path(os.path.join("src", "assets", "icon.png"))
+        self.setWindowIcon(QIcon(icon_path))
+        self.initUI()
 
+    def initUI(self):
+        """
+        Initialize the UI components of the login window.
+        """
         # Widget central
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
@@ -25,8 +38,9 @@ class LoginWindow(QMainWindow):
         # Titre avec icône
         title_layout = QHBoxLayout()
         icon_label = QLabel()
-        icon_label.setPixmap(QIcon("src/assets/icon.png").pixmap(48, 48))
-        title = QLabel("Bienvenue à la Bibliothèque")
+        icon_path = resource_path(os.path.join("src", "assets", "icon.png"))
+        icon_label.setPixmap(QIcon(icon_path).pixmap(48, 48))
+        title = QLabel(self.translations.get("title_label"))
         title.setFont(QFont("Arial", 22, QFont.Bold))
         title.setAlignment(Qt.AlignCenter)
         title_layout.addWidget(icon_label)
@@ -35,28 +49,34 @@ class LoginWindow(QMainWindow):
 
         layout.addSpacerItem(QSpacerItem(20, 20, QSizePolicy.Minimum, QSizePolicy.Expanding))
 
-        self.username_label = QLabel("Nom d'utilisateur :")
+        self.username_label = QLabel(self.translations.get("username_label"))
         self.username_label.setFont(QFont("Arial", 13))
         self.username_input = QLineEdit()
         self.username_input.setFont(QFont("Arial", 13))
-        self.username_input.setPlaceholderText("Entrez votre nom d'utilisateur")
+        self.username_input.setPlaceholderText(self.translations.get("username_placeholder"))
         layout.addWidget(self.username_label)
         layout.addWidget(self.username_input)
 
-        self.password_label = QLabel("Mot de passe :")
+        self.password_label = QLabel(self.translations.get("password_label"))
         self.password_label.setFont(QFont("Arial", 13))
         self.password_input = QLineEdit()
         self.password_input.setFont(QFont("Arial", 13))
         self.password_input.setEchoMode(QLineEdit.Password)
-        self.password_input.setPlaceholderText("Entrez votre mot de passe")
+        self.password_input.setPlaceholderText(self.translations.get("password_placeholder"))   
         layout.addWidget(self.password_label)
         layout.addWidget(self.password_input)
+
+        # Checkbox to toggle password visibility
+        self.show_password_checkbox = QCheckBox("Afficher le mot de passe")
+        self.show_password_checkbox.setFont(QFont("Arial", 11))
+        self.show_password_checkbox.stateChanged.connect(self.toggle_password_visibility)
+        layout.addWidget(self.show_password_checkbox)
 
         layout.addSpacerItem(QSpacerItem(20, 20, QSizePolicy.Minimum, QSizePolicy.Expanding))
 
         # Boutons
         button_layout = QHBoxLayout()
-        self.login_button = QPushButton("Se connecter")
+        self.login_button = QPushButton(self.translations.get("login_button"))
         self.login_button.setFont(QFont("Arial", 14, QFont.Bold))
         self.login_button.setStyleSheet(
             "QPushButton {background-color: #1976D2; color: white; border-radius: 8px; padding: 12px 0; min-width: 140px;}"
@@ -84,16 +104,28 @@ class LoginWindow(QMainWindow):
             }
         """)
 
+    def toggle_password_visibility(self, state):
+        if state == Qt.Checked:
+            self.password_input.setEchoMode(QLineEdit.Normal)
+        else:
+            self.password_input.setEchoMode(QLineEdit.Password)
+
     def handle_login(self):
         username = self.username_input.text()
         password = self.password_input.text()
         if username == "admin" and password == "admin":
-            QMessageBox.information(self, "Succès", "Connexion réussie !")
+            QMessageBox.information(self, 
+                self.translations.get("login_success_title"), 
+                self.translations.get("login_success_message"),
+                )
             self.close()
             self.main_window = MainWindow()
             self.main_window.show()
         else:
-            QMessageBox.warning(self, "Erreur", "Nom d'utilisateur ou mot de passe incorrect.")
+            QMessageBox.warning(self, 
+                self.translations.get("login_error_title"),
+                self.translations.get("login_error_message"), 
+                )
 
 def main():
     app = QApplication([])
