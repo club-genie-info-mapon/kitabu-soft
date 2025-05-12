@@ -5,6 +5,9 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtGui import QFont, QIcon
 from PyQt5.QtCore import Qt
 import os
+from src.controllers.userController import UserController
+from src.models.userModel import UserModel
+from src.db.strategies import SQLiteStrategy
 from src.main import MainWindow
 from src.utils.languages import load_translations
 from src.utils.helpers import resource_path
@@ -113,19 +116,36 @@ class LoginWindow(QMainWindow):
     def handle_login(self):
         username = self.username_input.text()
         password = self.password_input.text()
-        if username == "admin" and password == "admin":
-            QMessageBox.information(self, 
-                self.translations.get("login_success_title"), 
-                self.translations.get("login_success_message"),
+        try:
+            if username and password:
+                strategy  = SQLiteStrategy(resource_path(os.path.join("src", "db", "library.db")))
+                model = UserModel(strategy)
+                user = UserController(model)
+
+                if user.signin(username, password):
+                    QMessageBox.information(self, 
+                        self.translations.get("login_success_title"), 
+                        self.translations.get("login_success_message"),
+                        )
+                    self.close()
+                    self.main_window = MainWindow()
+                    self.main_window.show()
+                else:
+                    QMessageBox.warning(self, 
+                    self.translations.get("login_error_title"),
+                    self.translations.get("login_error_message"), 
+                    )
+            else:
+                QMessageBox.warning(self, 
+                    "Missing Information",
+                    "Please enter both username and password.", 
+                    )
+        except Exception as e:
+            QMessageBox.critical(self, 
+                "Error",
+                f'An error occurred: {e}'
                 )
-            self.close()
-            self.main_window = MainWindow()
-            self.main_window.show()
-        else:
-            QMessageBox.warning(self, 
-                self.translations.get("login_error_title"),
-                self.translations.get("login_error_message"), 
-                )
+            print(f"Error: {e}")
 
 def main():
     app = QApplication([])

@@ -1,4 +1,4 @@
-from src.ui.login import main
+from src.views.login import main
 
 if __name__ == '__main__':
     main()
