@@ -3,3 +3,4 @@ pyinstaller
 pymysql
 pymssql
 pandas
+bcrypt
