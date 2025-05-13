@@ -1,4 +1,5 @@
 venv
+kitabuSoftVenv
 dist
 build
 __pycache__

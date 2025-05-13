@@ -9,30 +9,57 @@ CREATE TABLE users (
 );
 -- commentary
 
--- Authors table
-CREATE TABLE authors (
+-- Table des auteurs
+CREATE TABLE auteurs (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL
+    nom TEXT UNIQUE NOT NULL
 );
 
--- Categories table
+
+-- Table des catégories
 CREATE TABLE categories (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL
+    nom TEXT UNIQUE NOT NULL
 );
 
--- Books table
-CREATE TABLE books (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    title TEXT NOT NULL,
-    author_id INTEGER NOT NULL,
-    category_id INTEGER NOT NULL,
-    isbn TEXT UNIQUE,
-    total_copies INTEGER DEFAULT 1,
-    available_copies INTEGER DEFAULT 1,
-    FOREIGN KEY (author_id) REFERENCES authors(id),
-    FOREIGN KEY (category_id) REFERENCES categories(id)
+-- Table de liaison entre auteurs et ouvrages
+CREATE TABLE auteurs_ouvrages (
+    auteur_id INTEGER NOT NULL,
+    ouvrage_id INTEGER NOT NULL,
+    PRIMARY KEY (auteur_id, ouvrage_id),
+    FOREIGN KEY (auteur_id) REFERENCES auteurs(id),
+    FOREIGN KEY (ouvrage_id) REFERENCES ouvrages(id)
 );
+
+-- Table de liaison entre ouvrages et catégories
+CREATE TABLE ouvrages_categories (
+    ouvrage_id INTEGER NOT NULL,
+    categorie_id INTEGER NOT NULL,
+    PRIMARY KEY (ouvrage_id, categorie_id),
+    FOREIGN KEY (ouvrage_id) REFERENCES ouvrages(id),
+    FOREIGN KEY (categorie_id) REFERENCES categories(id)
+);
+
+-- Table de liaison entre auteurs et catégories
+CREATE TABLE auteurs_categories (
+    auteur_id INTEGER NOT NULL,
+    categorie_id INTEGER NOT NULL,
+    PRIMARY KEY (auteur_id, categorie_id),
+    FOREIGN KEY (auteur_id) REFERENCES auteurs(id),
+    FOREIGN KEY (categorie_id) REFERENCES categories(id)
+);
+
+-- Table des ouvrages
+CREATE TABLE ouvrages (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    numero_inventaire TEXT UNIQUE NOT NULL,
+    cote TEXT NOT NULL,
+    intitule TEXT NOT NULL,
+    edition TEXT,
+    total_copies INTEGER DEFAULT 1,
+    copies_disponibles INTEGER DEFAULT 1
+);
+
 
 -- Book loans table (history of all borrowings)
 CREATE TABLE book_loans (
