@@ -6,6 +6,8 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtGui import QFont, QIcon
 from PyQt5.QtCore import Qt, QSize
 import os
+from src.controllers.userController import UserController
+from src.models.userModel import UserModel
 from src.utils.helpers import resource_path
 from src.db.strategies import SQLiteStrategy
 from src.controllers.bookController import BookController
@@ -139,6 +141,15 @@ class LibrarianWindow(QMainWindow):
         self.setGeometry(200, 100, 1100, 700)
         self.setWindowIcon(QIcon("src/assets/icon.png"))
 
+        # Strategies, Models and Controllers
+        strategy  = SQLiteStrategy(resource_path(os.path.join("src", "db", "library.db")))
+        
+        userModel = UserModel(strategy)
+        self.userController = UserController(userModel)
+
+        bookModel = BookModel(strategy)
+        self.bookController = BookController(bookModel)
+
         # Main widget and splitter
         main_widget = QWidget()
         main_layout = QHBoxLayout()
@@ -218,12 +229,10 @@ class LibrarianWindow(QMainWindow):
         self.users_table.setHorizontalHeaderLabels(["ID", "Nom d'utilisateur", "Mot de passe", "Nom complet", "Type"])
         self.users_table.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         users_layout.addWidget(self.users_table)
-        # Dummy data
-        self.users_data = [
-            [1, "admin", "admin", "Administrateur", "librarian"],
-            [2, "alice", "password123", "Alice Dupont", "academic"],
-            [3, "bob", "password456", "Bob Martin", "student"]
-        ]
+        
+        users = self.userController.get_all_users()
+        self.users_data = [[user[0], user[1], user[2], user[3], user[4]] for user in users]
+
         self.refresh_users_table()
         # CRUD Buttons
         crud_layout = QHBoxLayout()
@@ -267,15 +276,12 @@ class LibrarianWindow(QMainWindow):
         self.books_table.setHorizontalHeaderLabels(["ID", "Titre", "Auteur", "Catégorie", "ISBN", "Disponibles"])
         self.books_table.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         books_layout.addWidget(self.books_table)
-        # Dummy data
-        strategy  = SQLiteStrategy(resource_path(os.path.join("src", "db", "library.db")))
-        bookModel = BookModel(strategy)
-        bookController = BookController(bookModel)
-        books = bookController.get_all_books()
- 
+        
+        books = self.bookController.get_all_books()
         self.books_data = [
             [book[0], book[5], book[4], book[7], "N/A", book[-1]] for book in books
         ]
+
         self.refresh_books_table()
         
         # CRUD Buttons
@@ -371,9 +377,14 @@ class LibrarianWindow(QMainWindow):
     def add_user(self):
         dialog = UserDialog(self)
         if dialog.exec_() == QDialog.Accepted:
-            new_id = max([u[0] for u in self.users_data]) + 1 if self.users_data else 1
             username, password, full_name, user_type = dialog.get_data()
-            self.users_data.append([new_id, username, password, full_name, user_type])
+            # verify data are not empty
+            if not (username and password and full_name and user_type):
+                QMessageBox.warning(self, "Données vides", "Veuillez remplir tous les champs")
+                return
+            self.userController.create_user(username, password, full_name, user_type)
+            # Refresh User table to populate the new inserted user
+            self.users_data = self.userController.get_all_users()
             self.refresh_users_table()
 
     def edit_user(self):
@@ -393,7 +404,10 @@ class LibrarianWindow(QMainWindow):
         if row < 0:
             QMessageBox.warning(self, "Sélection requise", "Veuillez sélectionner un utilisateur à supprimer.")
             return
-        del self.users_data[row]
+        user_id = self.users_data[row][0]
+        self.userController.delete_user(user_id)
+        
+        self.users_data = self.userController.get_all_users()
         self.refresh_users_table()
 
     # --- Book CRUD ---

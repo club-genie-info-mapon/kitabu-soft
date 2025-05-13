@@ -17,9 +17,10 @@ class UserModel(BaseModel):
         """
         Create a new user.
         """
-        query = """
+        placeholder = '%s' if self.db.type == 'mysql' else '?'
+        query = f"""
             INSERT INTO users (username, password, full_name, user_type)
-            VALUES (%s, %s, %s, %s)
+            VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder})
         """
         params = (username, password, full_name, user_type)
         self.db.execute(query, params)
@@ -68,6 +69,7 @@ class UserModel(BaseModel):
         """
         Delete a user by ID.
         """
-        query = "DELETE FROM users WHERE id = %s"
+        placeholder = '%s' if self.db.type == 'mysql' else '?'
+        query = f"DELETE FROM users WHERE id = {placeholder}"
         self.db.execute(query, (user_id,))
         self.db.commit()
