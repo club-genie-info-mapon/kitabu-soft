@@ -7,6 +7,7 @@ CREATE TABLE users (
     user_type TEXT CHECK(user_type IN ('librarian', 'academic', 'student')) NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
+-- commentary
 
 -- Authors table
 CREATE TABLE authors (
