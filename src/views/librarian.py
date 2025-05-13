@@ -9,14 +9,24 @@ from PyQt5.QtCore import Qt, QSize
 class UserDialog(QDialog):
     def __init__(self, parent=None, user=None):
         super().__init__(parent)
-        self.setWindowTitle("Utilisateur" if user is None else "Modifier utilisateur")
-        self.setMinimumWidth(350)
+        self.setWindowTitle("Ajouter un utilisateur" if user is None else "Modifier utilisateur")
+        self.setMinimumWidth(370)
         layout = QFormLayout(self)
+        layout.setSpacing(18)
         self.username = QLineEdit()
+        self.username.setPlaceholderText("Nom d'utilisateur")
+        self.username.setStyleSheet("QLineEdit {padding: 8px; border-radius: 8px; border: 1.5px solid #1976D2;}")
         self.password = QLineEdit()
+        self.password.setPlaceholderText("Mot de passe")
+        self.password.setEchoMode(QLineEdit.Password)
+        self.password.setStyleSheet("QLineEdit {padding: 8px; border-radius: 8px; border: 1.5px solid #1976D2;}")
         self.full_name = QLineEdit()
+        self.full_name.setPlaceholderText("Nom complet")
+        self.full_name.setStyleSheet("QLineEdit {padding: 8px; border-radius: 8px; border: 1.5px solid #1976D2;}")
         self.user_type = QComboBox()
         self.user_type.addItems(["librarian", "academic", "student"])
+        self.user_type.setStyleSheet("QComboBox {padding: 8px; border-radius: 8px; border: 1.5px solid #1976D2;}")
+
         layout.addRow("Nom d'utilisateur:", self.username)
         layout.addRow("Mot de passe:", self.password)
         layout.addRow("Nom complet:", self.full_name)
@@ -27,6 +37,21 @@ class UserDialog(QDialog):
             self.full_name.setText(user[3])
             self.user_type.setCurrentText(user[4])
         self.buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        self.buttons.button(QDialogButtonBox.Ok).setText("Valider")
+        self.buttons.button(QDialogButtonBox.Cancel).setText("Annuler")
+        self.buttons.setStyleSheet("""
+            QDialogButtonBox QPushButton {
+                background-color: #1976D2;
+                color: white;
+                border-radius: 8px;
+                padding: 8px 24px;
+                font-size: 14px;
+                min-width: 100px;
+            }
+            QDialogButtonBox QPushButton:hover {
+                background-color: #1565C0;
+            }
+        """)
         self.buttons.accepted.connect(self.accept)
         self.buttons.rejected.connect(self.reject)
         layout.addWidget(self.buttons)
@@ -42,14 +67,26 @@ class UserDialog(QDialog):
 class BookDialog(QDialog):
     def __init__(self, parent=None, book=None):
         super().__init__(parent)
-        self.setWindowTitle("Livre" if book is None else "Modifier livre")
-        self.setMinimumWidth(350)
+        self.setWindowTitle("Ajouter un livre" if book is None else "Modifier livre")
+        self.setMinimumWidth(370)
         layout = QFormLayout(self)
+        layout.setSpacing(18)
         self.title = QLineEdit()
+        self.title.setPlaceholderText("Titre du livre")
+        self.title.setStyleSheet("QLineEdit {padding: 8px; border-radius: 8px; border: 1.5px solid #388E3C;}")
         self.author = QLineEdit()
+        self.author.setPlaceholderText("Auteur")
+        self.author.setStyleSheet("QLineEdit {padding: 8px; border-radius: 8px; border: 1.5px solid #388E3C;}")
         self.category = QLineEdit()
+        self.category.setPlaceholderText("Catégorie")
+        self.category.setStyleSheet("QLineEdit {padding: 8px; border-radius: 8px; border: 1.5px solid #388E3C;}")
         self.isbn = QLineEdit()
+        self.isbn.setPlaceholderText("ISBN")
+        self.isbn.setStyleSheet("QLineEdit {padding: 8px; border-radius: 8px; border: 1.5px solid #388E3C;}")
         self.copies = QLineEdit()
+        self.copies.setPlaceholderText("Nombre d'exemplaires")
+        self.copies.setStyleSheet("QLineEdit {padding: 8px; border-radius: 8px; border: 1.5px solid #388E3C;}")
+
         layout.addRow("Titre:", self.title)
         layout.addRow("Auteur:", self.author)
         layout.addRow("Catégorie:", self.category)
@@ -62,6 +99,21 @@ class BookDialog(QDialog):
             self.isbn.setText(book[4])
             self.copies.setText(str(book[5]))
         self.buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        self.buttons.button(QDialogButtonBox.Ok).setText("Valider")
+        self.buttons.button(QDialogButtonBox.Cancel).setText("Annuler")
+        self.buttons.setStyleSheet("""
+            QDialogButtonBox QPushButton {
+                background-color: #388E3C;
+                color: white;
+                border-radius: 8px;
+                padding: 8px 24px;
+                font-size: 14px;
+                min-width: 100px;
+            }
+            QDialogButtonBox QPushButton:hover {
+                background-color: #2E7D32;
+            }
+        """)
         self.buttons.accepted.connect(self.accept)
         self.buttons.rejected.connect(self.reject)
         layout.addWidget(self.buttons)
@@ -173,9 +225,25 @@ class LibrarianWindow(QMainWindow):
         btn_add_user = QPushButton("Ajouter")
         btn_edit_user = QPushButton("Modifier")
         btn_delete_user = QPushButton("Supprimer")
-        for btn in [btn_add_user, btn_edit_user, btn_delete_user]:
-            btn.setFont(QFont("Arial", 11))
-            btn.setMinimumWidth(100)
+        for btn, color in zip(
+            [btn_add_user, btn_edit_user, btn_delete_user],
+            ["#1976D2", "#FFA000", "#D32F2F"]
+        ):
+            btn.setFont(QFont("Arial", 12, QFont.Bold))
+            btn.setMinimumWidth(120)
+            btn.setCursor(Qt.PointingHandCursor)
+            btn.setStyleSheet(f"""
+                QPushButton {{
+                    background-color: {color};
+                    color: white;
+                    border-radius: 8px;
+                    padding: 10px 24px;
+                    font-size: 14px;
+                }}
+                QPushButton:hover {{
+                    background-color: #1565C0 if {color} == "#1976D2" else "#FFB300" if {color} == "#FFA000" else "#B71C1C";
+                }}
+            """)
             crud_layout.addWidget(btn)
         users_layout.addLayout(crud_layout)
         btn_add_user.clicked.connect(self.add_user)
@@ -206,9 +274,25 @@ class LibrarianWindow(QMainWindow):
         btn_add_book = QPushButton("Ajouter")
         btn_edit_book = QPushButton("Modifier")
         btn_delete_book = QPushButton("Supprimer")
-        for btn in [btn_add_book, btn_edit_book, btn_delete_book]:
-            btn.setFont(QFont("Arial", 11))
-            btn.setMinimumWidth(100)
+        for btn, color in zip(
+            [btn_add_book, btn_edit_book, btn_delete_book],
+            ["#388E3C", "#FFA000", "#D32F2F"]
+        ):
+            btn.setFont(QFont("Arial", 12, QFont.Bold))
+            btn.setMinimumWidth(120)
+            btn.setCursor(Qt.PointingHandCursor)
+            btn.setStyleSheet(f"""
+                QPushButton {{
+                    background-color: {color};
+                    color: white;
+                    border-radius: 8px;
+                    padding: 10px 24px;
+                    font-size: 14px;
+                }}
+                QPushButton:hover {{
+                    background-color: #2E7D32 if {color} == "#388E3C" else "#FFB300" if {color} == "#FFA000" else "#B71C1C";
+                }}
+            """)
             crud_books_layout.addWidget(btn)
         books_layout.addLayout(crud_books_layout)
         btn_add_book.clicked.connect(self.add_book)

@@ -10,6 +10,7 @@ from src.models.userModel import UserModel
 from src.db.strategies import SQLiteStrategy
 from src.main import MainWindow
 from src.views.librarian import LibrarianWindow
+from src.views.student import StudentWindow
 from src.utils.languages import load_translations
 from src.utils.helpers import resource_path
 
@@ -151,9 +152,11 @@ class LoginWindow(QMainWindow):
 def main():
     app = QApplication([])
     login = LoginWindow()
+    login.show()
     lib = LibrarianWindow()
     lib.show()
-    login.show()
+    student = StudentWindow()
+    student.show()
     app.exec_()
 
 if __name__ == "__main__":
