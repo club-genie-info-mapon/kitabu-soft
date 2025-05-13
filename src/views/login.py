@@ -9,6 +9,7 @@ from src.controllers.userController import UserController
 from src.models.userModel import UserModel
 from src.db.strategies import SQLiteStrategy
 from src.main import MainWindow
+from src.views.librarian import LibrarianWindow
 from src.utils.languages import load_translations
 from src.utils.helpers import resource_path
 
@@ -119,8 +120,8 @@ class LoginWindow(QMainWindow):
         try:
             if username and password:
                 strategy  = SQLiteStrategy(resource_path(os.path.join("src", "db", "library.db")))
-                model = UserModel(strategy)
-                user = UserController(model)
+                user_model = UserModel(strategy)
+                user = UserController(user_model)
 
                 if user.signin(username, password):
                     QMessageBox.information(self, 
@@ -150,6 +151,8 @@ class LoginWindow(QMainWindow):
 def main():
     app = QApplication([])
     login = LoginWindow()
+    lib = LibrarianWindow()
+    lib.show()
     login.show()
     app.exec_()
 

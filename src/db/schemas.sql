@@ -38,6 +38,7 @@ CREATE TABLE book_loans (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
     book_id INTEGER NOT NULL,
+    status TEXT CHECK(status IN ('borrowed', 'returned')) NOT NULL DEFAULT 'borrowed',
     borrowed_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     returned_at DATETIME,
     FOREIGN KEY (user_id) REFERENCES users(id),
