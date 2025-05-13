@@ -8,29 +8,19 @@ CREATE TABLE users (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
--- Authors table
-CREATE TABLE authors (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL
-);
-
--- Categories table
-CREATE TABLE categories (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL
-);
-
 -- Books table
 CREATE TABLE books (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    entry_date DATE,
+    inventory_number TEXT NOT NULL,
+    cote TEXT NOT NULL,
+    authors TEXT NOT NULL,
     title TEXT NOT NULL,
-    author_id INTEGER NOT NULL,
-    category_id INTEGER NOT NULL,
+    edition TEXT,
+    categories TEXT,
     isbn TEXT UNIQUE,
     total_copies INTEGER DEFAULT 1,
     available_copies INTEGER DEFAULT 1,
-    FOREIGN KEY (author_id) REFERENCES authors(id),
-    FOREIGN KEY (category_id) REFERENCES categories(id)
 );
 
 -- Book loans table (history of all borrowings)
