@@ -5,6 +5,11 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtGui import QFont, QIcon
 from PyQt5.QtCore import Qt, QSize
+import os
+from src.utils.helpers import resource_path
+from src.db.strategies import SQLiteStrategy
+from src.controllers.bookController import BookController
+from src.models.bookModel import BookModel
 
 class UserDialog(QDialog):
     def __init__(self, parent=None, user=None):
@@ -263,12 +268,16 @@ class LibrarianWindow(QMainWindow):
         self.books_table.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         books_layout.addWidget(self.books_table)
         # Dummy data
+        strategy  = SQLiteStrategy(resource_path(os.path.join("src", "db", "library.db")))
+        bookModel = BookModel(strategy)
+        bookController = BookController(bookModel)
+        books = bookController.get_all_books()
+ 
         self.books_data = [
-            [1, "Les Misérables", "Victor Hugo", "Roman", "9782070409189", 3],
-            [2, "Relativité", "Albert Einstein", "Science", "9782012792412", 1],
-            [3, "Vingt mille lieues sous les mers", "Jules Verne", "Roman", "9782253006329", 2]
+            [book[0], book[5], book[4], book[7], "N/A", book[-1]] for book in books
         ]
         self.refresh_books_table()
+        
         # CRUD Buttons
         crud_books_layout = QHBoxLayout()
         btn_add_book = QPushButton("Ajouter")

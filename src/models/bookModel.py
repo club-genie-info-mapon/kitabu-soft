@@ -1,11 +1,13 @@
+from src.db.strategies import SQLiteStrategy
 from src.models.baseModel import BaseModel
 
 class BookModel(BaseModel):
     """
     Model for book operations using the database context (strategy pattern).
     """
-    def __init__(self, db_context):
-        self.db = db_context
+    def __init__(self, db_stategy:SQLiteStrategy):
+        self.db = db_stategy
+        self.db.connect()
 
     def create(self, title, author_id, category_id, isbn, total_copies=1):
         """
