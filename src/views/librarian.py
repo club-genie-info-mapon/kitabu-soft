@@ -30,6 +30,12 @@ class UserDialog(QDialog):
         self.full_name = QLineEdit()
         self.full_name.setPlaceholderText("Nom complet")
         self.full_name.setStyleSheet("QLineEdit {padding: 8px; border-radius: 8px; border: 1.5px solid #1976D2;}")
+        self.faculty = QLineEdit()
+        self.faculty.setPlaceholderText("Faculté")
+        self.faculty.setStyleSheet("QLineEdit {padding: 8px; border-radius: 8px; border: 1.5px solid #1976D2;}")
+        self.class_ = QLineEdit()
+        self.class_.setPlaceholderText("Promotion")
+        self.class_.setStyleSheet("QLineEdit {padding: 8px; border-radius: 8px; border: 1.5px solid #1976D2;}")
         self.user_type = QComboBox()
         self.user_type.addItems(["librarian", "academic", "student"])
         self.user_type.setStyleSheet("QComboBox {padding: 8px; border-radius: 8px; border: 1.5px solid #1976D2;}")
@@ -37,6 +43,8 @@ class UserDialog(QDialog):
         layout.addRow("Nom d'utilisateur:", self.username)
         layout.addRow("Mot de passe:", self.password)
         layout.addRow("Nom complet:", self.full_name)
+        layout.addRow("Faculté:", self.faculty)
+        layout.addRow("Promotion:", self.class_)
         layout.addRow("Type:", self.user_type)
         if user:
             self.username.setText(user[1])
@@ -68,6 +76,8 @@ class UserDialog(QDialog):
             self.username.text(),
             self.password.text(),
             self.full_name.text(),
+            self.faculty.text(),
+            self.class_.text(),
             self.user_type.currentText()
         )
 
@@ -225,13 +235,13 @@ class LibrarianWindow(QMainWindow):
         users_title = QLabel("Liste des utilisateurs")
         users_title.setFont(QFont("Arial", 18, QFont.Bold))
         users_layout.addWidget(users_title)
-        self.users_table = QTableWidget(3, 5)
-        self.users_table.setHorizontalHeaderLabels(["ID", "Nom d'utilisateur", "Mot de passe", "Nom complet", "Type"])
+        self.users_table = QTableWidget(3, 7)
+        self.users_table.setHorizontalHeaderLabels(["ID", "Nom d'utilisateur", "Mot de passe", "Nom complet","Faculté","Promotion","Type"])
         self.users_table.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         users_layout.addWidget(self.users_table)
         
         users = self.userController.get_all_users()
-        self.users_data = [[user[0], user[1], user[2], user[3], user[4]] for user in users]
+        self.users_data = [[user[0], user[1], user[2], user[3], user[4],user[5],user[6]] for user in users]
 
         self.refresh_users_table()
         # CRUD Buttons
@@ -425,12 +435,12 @@ class LibrarianWindow(QMainWindow):
     def add_user(self):
         dialog = UserDialog(self)
         if dialog.exec_() == QDialog.Accepted:
-            username, password, full_name, user_type = dialog.get_data()
+            username, password, full_name, faculty,class_,user_type = dialog.get_data()
             # verify data are not empty
             if not (username and password and full_name and user_type):
                 QMessageBox.warning(self, "Données vides", "Veuillez remplir tous les champs")
                 return
-            self.userController.create_user(username, password, full_name, user_type)
+            self.userController.create_user(username, password, full_name, faculty, class_, user_type)
             # Refresh User table to populate the new inserted user
             self.users_data = self.userController.get_all_users()
             self.refresh_users_table()
@@ -451,12 +461,14 @@ class LibrarianWindow(QMainWindow):
                 QMessageBox.No
             )
             if reply == QMessageBox.Yes:
-                username, password, full_name, user_type = dialog.get_data()
+                username, password, full_name, faculty, class_, user_type = dialog.get_data()
                 user_id = user[0]
                 data = {
                     'username': username,
                     'password': password,
                     'full_name': full_name,
+                    'faculty': faculty,
+                    'class': class_,
                     'user_type': user_type
                 }
                 self.userController.update_user(user_id, data)

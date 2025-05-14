@@ -11,11 +11,11 @@ class UserController:
         """
         self.user_model = user_model
 
-    def create_user(self, username, password, full_name, user_type):
+    def create_user(self, username, password, full_name, faculty, class_, user_type):
         """
         Create a new user.
         """
-        self.user_model.create(username, password, full_name, user_type)
+        self.user_model.create(username, password, full_name, faculty, class_, user_type)
 
     def get_user_by_id(self, user_id):
         """

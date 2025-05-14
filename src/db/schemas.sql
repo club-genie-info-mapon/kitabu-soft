@@ -4,6 +4,8 @@ CREATE TABLE users (
     username TEXT UNIQUE NOT NULL,
     password TEXT NOT NULL,
     full_name TEXT NOT NULL,
+    faculty TEXT,
+    class TEXT,
     user_type TEXT CHECK(user_type IN ('librarian', 'academic', 'student')) NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );

@@ -15,15 +15,15 @@ class UserModel(BaseModel):
         self.placeholder = "%s" if self.db.type == "mysql" else "?"
         
 
-    def create(self, username, password, full_name, user_type):
+    def create(self, username, password, full_name, faculty, class_, user_type):
         """
         Create a new user.
         """
         query = f"""
-            INSERT INTO users (username, password, full_name, user_type)
-            VALUES ({self.placeholder}, {self.placeholder}, {self.placeholder}, {self.placeholder})
+            INSERT INTO users (username, password, full_name, faculty, class, user_type)
+            VALUES ({self.placeholder}, {self.placeholder}, {self.placeholder}, {self.placeholder}, {self.placeholder}, {self.placeholder})
         """
-        params = (username, password, full_name, user_type)
+        params = (username, password, full_name,faculty, class_, user_type)
         self.db.execute(query, params)
         self.db.commit()
 
@@ -39,7 +39,7 @@ class UserModel(BaseModel):
         """
         Get a user by username.
         """
-        query = f"SELECT id, username, password, full_name, user_type FROM users WHERE username = {self.placeholder}"
+        query = f"SELECT id, username, password, full_name, user_type, faculty, class FROM users WHERE username = {self.placeholder}"
         self.db.execute(query, (username,))
         return self.db.fetchone()
 
