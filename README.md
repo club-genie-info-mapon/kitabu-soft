@@ -1,5 +1,11 @@
 # Library Management Software KitabuSoft
 
+## How to build
+
+```bash
+pyinstaller --noconsole --onefile --icon="src/assets/icon.ico" --add-data="src/assets;src/assets" --add-data="src/db;src/db" --add-data="src/settings;src/settings" .\start.py
+```
+
 ## How To contribute
 
 - Fork The projet
