@@ -265,25 +265,73 @@ class LibrarianWindow(QMainWindow):
         btn_delete_user.clicked.connect(self.delete_user)
         self.pages.addWidget(users_page)
 
-        # Books Page with CRUD
+        # Books Page with CRUD and search
         books_page = QWidget()
         books_layout = QVBoxLayout()
         books_page.setLayout(books_layout)
         books_title = QLabel("Liste des livres")
         books_title.setFont(QFont("Arial", 18, QFont.Bold))
         books_layout.addWidget(books_title)
-        self.books_table = QTableWidget(3, 6)
-        self.books_table.setHorizontalHeaderLabels(["ID", "Titre", "Auteur", "Catégorie", "ISBN", "Disponibles"])
+
+        # --- Search zone ---
+        search_layout = QHBoxLayout()
+        self.book_search_input = QLineEdit()
+        self.book_search_input.setPlaceholderText("🔍 Rechercher par titre, auteur, catégorie ou ISBN...")
+        self.book_search_input.setFont(QFont("Arial", 12))
+        self.book_search_input.setStyleSheet("""
+            QLineEdit {
+                padding: 8px 16px;
+                border: 2px solid #1976D2;
+                border-radius: 18px;
+                background: #f9f9f9;
+                font-size: 14px;
+                min-width: 300px;
+            }
+            QLineEdit:focus {
+                border: 2px solid #1976D2;
+                background: #fff;
+            }
+        """)
+        book_search_btn = QPushButton("Rechercher")
+        book_search_btn.setFont(QFont("Arial", 12, QFont.Bold))
+        book_search_btn.setCursor(Qt.PointingHandCursor)
+        book_search_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #1976D2;
+                color: white;
+                border-radius: 18px;
+                padding: 8px 24px;
+                margin-left: 10px;
+            }
+            QPushButton:hover {
+                background-color: #0461f7;
+            }
+        """)
+        book_search_btn.clicked.connect(self.search_books)
+        search_layout.addStretch()
+        search_layout.addWidget(self.book_search_input)
+        search_layout.addWidget(book_search_btn)
+        search_layout.addStretch()
+        books_layout.addLayout(search_layout)
+
+        # --- Table with details button ---
+        self.books_table = QTableWidget(0, 7)
+        self.books_table.setHorizontalHeaderLabels([
+            "ID", "Titre", "Auteur", "Catégorie", "ISBN", "Disponibles", "Détails"
+        ])
         self.books_table.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.books_table.setFont(QFont("Arial", 12))
+        self.books_table.horizontalHeader().setFont(QFont("Arial", 12, QFont.Bold))
+        self.books_table.verticalHeader().setDefaultSectionSize(40)
         books_layout.addWidget(self.books_table)
-        
+
+        # Load books from controller
         books = self.bookController.get_all_books()
         self.books_data = [
             [book[0], book[5], book[4], book[7], "N/A", book[-1]] for book in books
         ]
-
         self.refresh_books_table()
-        
+
         # CRUD Buttons
         crud_books_layout = QHBoxLayout()
         btn_add_book = QPushButton("Ajouter")
@@ -291,7 +339,7 @@ class LibrarianWindow(QMainWindow):
         btn_delete_book = QPushButton("Supprimer")
         for btn, color in zip(
             [btn_add_book, btn_edit_book, btn_delete_book],
-            ["#388E3C", "#FFA000", "#D32F2F"]
+            ["#1976D2", "#FFA000", "#D32F2F"]
         ):
             btn.setFont(QFont("Arial", 12, QFont.Bold))
             btn.setMinimumWidth(120)
@@ -305,7 +353,7 @@ class LibrarianWindow(QMainWindow):
                     font-size: 14px;
                 }}
                 QPushButton:hover {{
-                    background-color: #2E7D32 if {color} == "#388E3C" else "#FFB300" if {color} == "#FFA000" else "#B71C1C";
+                    background-color: #2E7D32 if {color} == "#1976D2" else "#FFB300" if {color} == "#FFA000" else "#B71C1C";
                 }}
             """)
             crud_books_layout.addWidget(btn)
@@ -395,36 +443,69 @@ class LibrarianWindow(QMainWindow):
         user = self.users_data[row]
         dialog = UserDialog(self, user)
         if dialog.exec_() == QDialog.Accepted:
-            username, password, full_name, user_type = dialog.get_data()
-            user_id = user[0]
-            data = {
-                'username':username,
-                'password':password,
-                'full_name':full_name,
-                'user_type':user_type
-            }
-            self.userController.update_user(user_id, data)
-
-            self.users_data = self.userController.get_all_users()
-            self.refresh_users_table()
+            reply = QMessageBox.question(
+                self,
+                "Confirmation",
+                "Êtes-vous sûr de vouloir modifier cet utilisateur ?",
+                QMessageBox.Yes | QMessageBox.No,
+                QMessageBox.No
+            )
+            if reply == QMessageBox.Yes:
+                username, password, full_name, user_type = dialog.get_data()
+                user_id = user[0]
+                data = {
+                    'username': username,
+                    'password': password,
+                    'full_name': full_name,
+                    'user_type': user_type
+                }
+                self.userController.update_user(user_id, data)
+                self.users_data = self.userController.get_all_users()
+                self.refresh_users_table()
 
     def delete_user(self):
         row = self.users_table.currentRow()
         if row < 0:
             QMessageBox.warning(self, "Sélection requise", "Veuillez sélectionner un utilisateur à supprimer.")
             return
-        user_id = self.users_data[row][0]
-        self.userController.delete_user(user_id)
-
-        self.users_data = self.userController.get_all_users()
-        self.refresh_users_table()
+        reply = QMessageBox.question(
+            self,
+            "Confirmation",
+            "Êtes-vous sûr de vouloir supprimer cet utilisateur ?",
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.No
+        )
+        if reply == QMessageBox.Yes:
+            user_id = self.users_data[row][0]
+            self.userController.delete_user(user_id)
+            self.users_data = self.userController.get_all_users()
+            self.refresh_users_table()
 
     # --- Book CRUD ---
-    def refresh_books_table(self):
-        self.books_table.setRowCount(len(self.books_data))
-        for row, book in enumerate(self.books_data):
+    def refresh_books_table(self, filtered=None):
+        data = filtered if filtered is not None else self.books_data
+        self.books_table.setRowCount(len(data))
+        for row, book in enumerate(data):
             for col, value in enumerate(book):
-                self.books_table.setItem(row, col, QTableWidgetItem(str(value)))
+                item = QTableWidgetItem(str(value))
+                item.setFont(QFont("Arial", 12))
+                self.books_table.setItem(row, col, item)
+            # Add "Détails" button
+            btn = QPushButton("Détails")
+            btn.setFont(QFont("Arial", 12, QFont.Bold))
+            btn.setStyleSheet("""
+                QPushButton {
+                    background-color: #1976D2;
+                    color: white;
+                    border-radius: 8px;
+                    padding: 6px 18px;
+                }
+                QPushButton:hover {
+                    background-color: #1565C0;
+                }
+            """)
+            btn.clicked.connect(lambda _, b=book: self.show_book_details(b))
+            self.books_table.setCellWidget(row, 6, btn)
 
     def add_book(self):
         dialog = BookDialog(self)
@@ -453,3 +534,25 @@ class LibrarianWindow(QMainWindow):
             return
         del self.books_data[row]
         self.refresh_books_table()
+
+    def search_books(self):
+        text = self.book_search_input.text().lower()
+        if not text:
+            self.refresh_books_table()
+            return
+        filtered = [
+            book for book in self.books_data
+            if any(text in str(field).lower() for field in book[:5])
+        ]
+        self.refresh_books_table(filtered)
+
+    def show_book_details(self, book):
+        details = (
+            f"<b>ID:</b> {book[0]}<br>"
+            f"<b>Titre:</b> {book[1]}<br>"
+            f"<b>Auteur:</b> {book[2]}<br>"
+            f"<b>Catégorie:</b> {book[3]}<br>"
+            f"<b>ISBN:</b> {book[4]}<br>"
+            f"<b>Disponibles:</b> {book[5]}"
+        )
+        QMessageBox.information(self, "Détails du livre", details)
