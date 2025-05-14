@@ -396,7 +396,16 @@ class LibrarianWindow(QMainWindow):
         dialog = UserDialog(self, user)
         if dialog.exec_() == QDialog.Accepted:
             username, password, full_name, user_type = dialog.get_data()
-            self.users_data[row] = [user[0], username, password, full_name, user_type]
+            user_id = user[0]
+            data = {
+                'username':username,
+                'password':password,
+                'full_name':full_name,
+                'user_type':user_type
+            }
+            self.userController.update_user(user_id, data)
+
+            self.users_data = self.userController.get_all_users()
             self.refresh_users_table()
 
     def delete_user(self):
@@ -406,7 +415,7 @@ class LibrarianWindow(QMainWindow):
             return
         user_id = self.users_data[row][0]
         self.userController.delete_user(user_id)
-        
+
         self.users_data = self.userController.get_all_users()
         self.refresh_users_table()
 

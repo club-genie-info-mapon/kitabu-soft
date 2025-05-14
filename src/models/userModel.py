@@ -12,15 +12,16 @@ class UserModel(BaseModel):
         """
         self.db = db_strategy
         self.db.connect()
+        self.placeholder = "%s" if self.db.type == "mysql" else "?"
+        
 
     def create(self, username, password, full_name, user_type):
         """
         Create a new user.
         """
-        placeholder = '%s' if self.db.type == 'mysql' else '?'
         query = f"""
             INSERT INTO users (username, password, full_name, user_type)
-            VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder})
+            VALUES ({self.placeholder}, {self.placeholder}, {self.placeholder}, {self.placeholder})
         """
         params = (username, password, full_name, user_type)
         self.db.execute(query, params)
@@ -30,7 +31,7 @@ class UserModel(BaseModel):
         """
         Get a user by ID.
         """
-        query = "SELECT * FROM users WHERE id = %s"
+        query = f"SELECT * FROM users WHERE id = {self.placeholder}"
         self.db.execute(query, (user_id,))
         return self.db.fetchone()
 
@@ -38,8 +39,7 @@ class UserModel(BaseModel):
         """
         Get a user by username.
         """
-        placeholder = "%s" if self.db.type == "mysql" else "?"
-        query = f"SELECT id, username, password, full_name, user_type FROM users WHERE username = {placeholder}"
+        query = f"SELECT id, username, password, full_name, user_type FROM users WHERE username = {self.placeholder}"
         self.db.execute(query, (username,))
         return self.db.fetchone()
 
@@ -58,10 +58,10 @@ class UserModel(BaseModel):
         fields = []
         params = []
         for key, value in data.items():
-            fields.append(f"{key} = %s")
+            fields.append(f"{key} = {self.placeholder}")
             params.append(value)
         params.append(user_id)
-        query = f"UPDATE users SET {', '.join(fields)} WHERE id = %s"
+        query = f"UPDATE users SET {', '.join(fields)} WHERE id = {self.placeholder}"
         self.db.execute(query, tuple(params))
         self.db.commit()
 
@@ -69,7 +69,6 @@ class UserModel(BaseModel):
         """
         Delete a user by ID.
         """
-        placeholder = '%s' if self.db.type == 'mysql' else '?'
-        query = f"DELETE FROM users WHERE id = {placeholder}"
+        query = f"DELETE FROM users WHERE id = {self.placeholder}"
         self.db.execute(query, (user_id,))
         self.db.commit()
