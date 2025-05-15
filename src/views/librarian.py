@@ -330,8 +330,8 @@ class LibrarianWindow(QMainWindow):
             "ID", "Titre", "Auteur", "Catégorie", "ISBN", "Disponibles", "Détails"
         ])
         self.books_table.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        self.books_table.setFont(QFont("Arial", 12))
-        self.books_table.horizontalHeader().setFont(QFont("Arial", 12, QFont.Bold))
+        self.books_table.setFont(QFont("Arial", 10))
+        self.books_table.horizontalHeader().setFont(QFont("Arial", 10, QFont.Bold))
         self.books_table.verticalHeader().setDefaultSectionSize(40)
         books_layout.addWidget(self.books_table)
 
@@ -500,14 +500,14 @@ class LibrarianWindow(QMainWindow):
         for row, book in enumerate(data):
             for col, value in enumerate(book):
                 item = QTableWidgetItem(str(value))
-                item.setFont(QFont("Arial", 12))
+                item.setFont(QFont("Arial", 10))
                 self.books_table.setItem(row, col, item)
             # Add "Détails" button
             btn = QPushButton("Détails")
-            btn.setFont(QFont("Arial", 12, QFont.Bold))
+            btn.setFont(QFont("Arial", 10, QFont.Bold))
             btn.setStyleSheet("""
                 QPushButton {
-                    background-color: #1976D2;
+                    background-color: #178afc;
                     color: white;
                     border-radius: 8px;
                     padding: 6px 18px;
