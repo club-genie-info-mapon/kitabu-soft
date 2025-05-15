@@ -1,3 +1,4 @@
+import os
 from PyQt5.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QListWidget,
     QStackedWidget, QListWidgetItem, QTableWidget, QTableWidgetItem, QSizePolicy, QSplitter, QLineEdit, QPushButton
@@ -5,12 +6,27 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtGui import QFont, QIcon
 from PyQt5.QtCore import Qt, QSize
 
+from src.controllers.bookController import BookController
+from src.controllers.userController import UserController
+from src.models.userModel import UserModel
+from src.models.bookModel import BookModel
+from src.db.strategies import SQLiteStrategy
+
 class StudentWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Espace Étudiant")
         self.setGeometry(250, 120, 1000, 650)
         self.setWindowIcon(QIcon("src/assets/icon.png"))
+
+        # Strategy, Models Controllers
+        strategy = SQLiteStrategy(os.path.join('src', 'db','library.db'))
+
+        userModel = UserModel(strategy)
+        self.userController = UserController(userModel)
+
+        bookModel = BookModel(strategy)
+        self.bookController = BookController(bookModel)
 
         # Main widget and splitter
         main_widget = QWidget()
@@ -133,12 +149,15 @@ class StudentWindow(QMainWindow):
 
         self.books_table = QTableWidget(3, 5)
         self.books_table.setHorizontalHeaderLabels(["ID", "Titre", "Auteur", "Catégorie", "Disponibles"])
-        self.books_data = [
-            [1, "Les Misérables", "Victor Hugo", "Roman", 3],
-            [2, "Relativité", "Albert Einstein", "Science", 1],
-            [3, "Vingt mille lieues sous les mers", "Jules Verne", "Roman", 2]
+        
+        # Show all availible books
+        books = self.bookController.get_all_books()
+        books = [
+            [book[0], book[5], book[4], book[7], book[-1]] for book in books
         ]
+        self.books_data = books
         self.refresh_books_table()
+
         self.books_table.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         books_layout.addWidget(self.books_table)
         self.pages.addWidget(books_page)
