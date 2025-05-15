@@ -8,16 +8,26 @@ class BookModel(BaseModel):
     def __init__(self, db_stategy:SQLiteStrategy):
         self.db = db_stategy
         self.db.connect()
+        self.placeholder = '%s' if self.db.type == 'mysql' else '?'
 
-    def create(self, title, author_id, category_id, isbn, total_copies=1):
+    def create(self, 
+               title, 
+               entry_date, 
+               inventory_number,
+               cote,
+               author, 
+               edition,
+               category,
+               isbn,
+               total_copies=1):
         """
         Create a new book.
         """
-        query = """
-            INSERT INTO books (title, author_id, category_id, isbn, total_copies, available_copies)
-            VALUES (%s, %s, %s, %s, %s, %s)
+        query = f"""
+            INSERT INTO books (title, entry_date, inventory_number, cote, authors, edition, categories, isbn, total_copies, available_copies)
+            VALUES ({self.placeholder}, {self.placeholder}, {self.placeholder}, {self.placeholder}, {self.placeholder}, {self.placeholder},{self.placeholder},{self.placeholder},{self.placeholder},{self.placeholder})
         """
-        params = (title, author_id, category_id, isbn, total_copies, total_copies)
+        params = (title, entry_date, inventory_number, cote,author, edition,category,isbn,total_copies, total_copies)
         self.db.execute(query, params)
         self.db.commit()
 
@@ -25,7 +35,7 @@ class BookModel(BaseModel):
         """
         Get a book by ID.
         """
-        query = "SELECT * FROM books WHERE id = %s"
+        query = f"SELECT * FROM books WHERE id = {self.placeholder}"
         self.db.execute(query, (book_id,))
         return self.db.fetchone()
 

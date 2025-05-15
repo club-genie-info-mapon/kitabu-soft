@@ -13,11 +13,11 @@ CREATE TABLE users (
 -- Books table
 CREATE TABLE books (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
     entry_date DATE,
     inventory_number TEXT NOT NULL,
     cote TEXT NOT NULL,
     authors TEXT NOT NULL,
-    title TEXT NOT NULL,
     edition TEXT,
     categories TEXT,
     isbn TEXT UNIQUE,

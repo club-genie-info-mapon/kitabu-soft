@@ -1,10 +1,10 @@
 from PyQt5.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QListWidget, 
     QStackedWidget, QListWidgetItem, QTableWidget, QTableWidgetItem, QSizePolicy, QSplitter,
-    QPushButton, QLineEdit, QMessageBox, QDialog, QFormLayout, QComboBox, QDialogButtonBox
+    QPushButton, QLineEdit, QMessageBox, QDialog, QFormLayout, QComboBox, QDialogButtonBox, QDateEdit
 )
 from PyQt5.QtGui import QFont, QIcon
-from PyQt5.QtCore import Qt, QSize
+from PyQt5.QtCore import Qt, QSize, QDate
 import os
 from src.controllers.userController import UserController
 from src.models.userModel import UserModel
@@ -91,11 +91,24 @@ class BookDialog(QDialog):
         self.title = QLineEdit()
         self.title.setPlaceholderText("Titre du livre")
         self.title.setStyleSheet("QLineEdit {padding: 8px; border-radius: 8px; border: 1.5px solid #388E3C;}")
+        self.inventory_number = QLineEdit()
+        self.inventory_number.setPlaceholderText("Numéro d'inventaire")
+        self.inventory_number.setStyleSheet("QLineEdit {padding: 8px; border-radius: 8px; border: 1.5px solid #388E3C;}")
+        self.entry_date = QDateEdit(self)
+        self.entry_date.setDate(QDate.currentDate())
+        self.entry_date.setCalendarPopup(True)
+        self.entry_date.setStyleSheet("QDateEdit {padding: 8px; border-radius: 8px; border: 1.5px solid #388E3C;}")
+        self.cote = QLineEdit()
+        self.cote.setPlaceholderText("Côte")
+        self.cote.setStyleSheet("QLineEdit {padding: 8px; border-radius: 8px; border: 1.5px solid #388E3C;}")
         self.author = QLineEdit()
-        self.author.setPlaceholderText("Auteur")
+        self.author.setPlaceholderText("Auteur(s)")
         self.author.setStyleSheet("QLineEdit {padding: 8px; border-radius: 8px; border: 1.5px solid #388E3C;}")
+        self.edition = QLineEdit()
+        self.edition.setPlaceholderText("Edition")
+        self.edition.setStyleSheet("QLineEdit {padding: 8px; border-radius: 8px; border: 1.5px solid #388E3C;}")
         self.category = QLineEdit()
-        self.category.setPlaceholderText("Catégorie")
+        self.category.setPlaceholderText("Catégorie(s)")
         self.category.setStyleSheet("QLineEdit {padding: 8px; border-radius: 8px; border: 1.5px solid #388E3C;}")
         self.isbn = QLineEdit()
         self.isbn.setPlaceholderText("ISBN")
@@ -105,16 +118,24 @@ class BookDialog(QDialog):
         self.copies.setStyleSheet("QLineEdit {padding: 8px; border-radius: 8px; border: 1.5px solid #388E3C;}")
 
         layout.addRow("Titre:", self.title)
+        layout.addRow("Numéro d'inventaire:", self.inventory_number)
+        layout.addRow("Date d'entrée:", self.entry_date)
+        layout.addRow("Côte", self.cote)
         layout.addRow("Auteur:", self.author)
+        layout.addRow("edition:", self.edition)
         layout.addRow("Catégorie:", self.category)
         layout.addRow("ISBN:", self.isbn)
         layout.addRow("Exemplaires:", self.copies)
         if book:
             self.title.setText(book[1])
-            self.author.setText(book[2])
-            self.category.setText(book[3])
-            self.isbn.setText(book[4])
-            self.copies.setText(str(book[5]))
+            self.entry_date.setDate(QDate.fromString(book[2], "yyyy-MM-dd"))
+            self.inventory_number.setText(book[3])
+            self.cote.setText(book[4])
+            self.author.setText(str(book[5]))
+            self.edition.setText(str(book[6]))
+            self.category.setText(str(book[7]))
+            self.isbn.setText(str(book[8]))
+            self.copies.setText(str(book[9]))
         self.buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         self.buttons.button(QDialogButtonBox.Ok).setText("Valider")
         self.buttons.button(QDialogButtonBox.Cancel).setText("Annuler")
@@ -138,7 +159,11 @@ class BookDialog(QDialog):
     def get_data(self):
         return (
             self.title.text(),
+            self.entry_date.text(),
+            self.inventory_number.text(),
+            self.cote.text(),
             self.author.text(),
+            self.edition.text(),
             self.category.text(),
             self.isbn.text(),
             self.copies.text()
@@ -522,10 +547,17 @@ class LibrarianWindow(QMainWindow):
     def add_book(self):
         dialog = BookDialog(self)
         if dialog.exec_() == QDialog.Accepted:
-            new_id = max([b[0] for b in self.books_data]) + 1 if self.books_data else 1
-            title, author, category, isbn, copies = dialog.get_data()
-            self.books_data.append([new_id, title, author, category, isbn, int(copies)])
-            self.refresh_books_table()
+            title, entry_date, inventory_number, cote, author, edition, category, isbn, copies = dialog.get_data()
+            if copies.isdigit():
+                self.bookController.add_book([
+                    title, entry_date, inventory_number, cote, author, edition, category, isbn, copies
+                ])
+                self.books_data = self.bookController.get_all_books()
+                self.refresh_books_table()
+            else:
+                QMessageBox.critical(self,
+                "Echec",
+                "Echec, Le nombre d'exemplaire doit être un entier")
 
     def edit_book(self):
         row = self.books_table.currentRow()
