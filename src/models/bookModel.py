@@ -54,10 +54,10 @@ class BookModel(BaseModel):
         fields = []
         params = []
         for key, value in data.items():
-            fields.append(f"{key} = %s")
+            fields.append(f"{key} = {self.placeholder}")
             params.append(value)
         params.append(book_id)
-        query = f"UPDATE books SET {', '.join(fields)} WHERE id = %s"
+        query = f"UPDATE books SET {', '.join(fields)} WHERE id = {self.placeholder}"
         self.db.execute(query, tuple(params))
         self.db.commit()
 
@@ -65,6 +65,6 @@ class BookModel(BaseModel):
         """
         Delete a book by ID.
         """
-        query = "DELETE FROM books WHERE id = %s"
+        query = f"DELETE FROM books WHERE id = {self.placeholder}"
         self.db.execute(query, (book_id,))
         self.db.commit()

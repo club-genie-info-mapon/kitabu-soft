@@ -20,7 +20,7 @@ CREATE TABLE books (
     authors TEXT NOT NULL,
     edition TEXT,
     categories TEXT,
-    isbn TEXT UNIQUE,
+    isbn TEXT,
     total_copies INTEGER DEFAULT 1,
     available_copies INTEGER DEFAULT 1,
 );

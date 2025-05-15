@@ -1,10 +1,10 @@
 from PyQt5.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QListWidget, 
     QStackedWidget, QListWidgetItem, QTableWidget, QTableWidgetItem, QSizePolicy, QSplitter,
-    QPushButton, QLineEdit, QMessageBox, QDialog, QFormLayout, QComboBox, QDialogButtonBox, QDateEdit
+    QPushButton, QLineEdit, QMessageBox, QDialog
 )
 from PyQt5.QtGui import QFont, QIcon
-from PyQt5.QtCore import Qt, QSize, QDate
+from PyQt5.QtCore import Qt, QSize
 import os
 from src.controllers.userController import UserController
 from src.models.userModel import UserModel
@@ -12,162 +12,9 @@ from src.utils.helpers import resource_path
 from src.db.strategies import SQLiteStrategy
 from src.controllers.bookController import BookController
 from src.models.bookModel import BookModel
+from src.views.dialogs.bookDialog import BookDialog
+from src.views.dialogs.userDialog import UserDialog
 
-class UserDialog(QDialog):
-    def __init__(self, parent=None, user=None):
-        super().__init__(parent)
-        self.setWindowTitle("Ajouter un utilisateur" if user is None else "Modifier utilisateur")
-        self.setMinimumWidth(370)
-        layout = QFormLayout(self)
-        layout.setSpacing(18)
-        self.username = QLineEdit()
-        self.username.setPlaceholderText("Nom d'utilisateur")
-        self.username.setStyleSheet("QLineEdit {padding: 8px; border-radius: 8px; border: 1.5px solid #1976D2;}")
-        self.password = QLineEdit()
-        self.password.setPlaceholderText("Mot de passe")
-        self.password.setEchoMode(QLineEdit.Password)
-        self.password.setStyleSheet("QLineEdit {padding: 8px; border-radius: 8px; border: 1.5px solid #1976D2;}")
-        self.full_name = QLineEdit()
-        self.full_name.setPlaceholderText("Nom complet")
-        self.full_name.setStyleSheet("QLineEdit {padding: 8px; border-radius: 8px; border: 1.5px solid #1976D2;}")
-        self.faculty = QLineEdit()
-        self.faculty.setPlaceholderText("Faculté")
-        self.faculty.setStyleSheet("QLineEdit {padding: 8px; border-radius: 8px; border: 1.5px solid #1976D2;}")
-        self.class_ = QLineEdit()
-        self.class_.setPlaceholderText("Promotion")
-        self.class_.setStyleSheet("QLineEdit {padding: 8px; border-radius: 8px; border: 1.5px solid #1976D2;}")
-        self.user_type = QComboBox()
-        self.user_type.addItems(["librarian", "academic", "student"])
-        self.user_type.setStyleSheet("QComboBox {padding: 8px; border-radius: 8px; border: 1.5px solid #1976D2;}")
-
-        layout.addRow("Nom d'utilisateur:", self.username)
-        layout.addRow("Mot de passe:", self.password)
-        layout.addRow("Nom complet:", self.full_name)
-        layout.addRow("Faculté:", self.faculty)
-        layout.addRow("Promotion:", self.class_)
-        layout.addRow("Type:", self.user_type)
-        if user:
-            self.username.setText(user[1])
-            self.password.setText(user[2])
-            self.full_name.setText(user[3])
-            self.user_type.setCurrentText(user[4])
-        self.buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
-        self.buttons.button(QDialogButtonBox.Ok).setText("Valider")
-        self.buttons.button(QDialogButtonBox.Cancel).setText("Annuler")
-        self.buttons.setStyleSheet("""
-            QDialogButtonBox QPushButton {
-                background-color: #1976D2;
-                color: white;
-                border-radius: 8px;
-                padding: 8px 24px;
-                font-size: 14px;
-                min-width: 100px;
-            }
-            QDialogButtonBox QPushButton:hover {
-                background-color: #1565C0;
-            }
-        """)
-        self.buttons.accepted.connect(self.accept)
-        self.buttons.rejected.connect(self.reject)
-        layout.addWidget(self.buttons)
-
-    def get_data(self):
-        return (
-            self.username.text(),
-            self.password.text(),
-            self.full_name.text(),
-            self.faculty.text(),
-            self.class_.text(),
-            self.user_type.currentText()
-        )
-
-class BookDialog(QDialog):
-    def __init__(self, parent=None, book=None):
-        super().__init__(parent)
-        self.setWindowTitle("Ajouter un livre" if book is None else "Modifier livre")
-        self.setMinimumWidth(370)
-        layout = QFormLayout(self)
-        layout.setSpacing(18)
-        self.title = QLineEdit()
-        self.title.setPlaceholderText("Titre du livre")
-        self.title.setStyleSheet("QLineEdit {padding: 8px; border-radius: 8px; border: 1.5px solid #388E3C;}")
-        self.inventory_number = QLineEdit()
-        self.inventory_number.setPlaceholderText("Numéro d'inventaire")
-        self.inventory_number.setStyleSheet("QLineEdit {padding: 8px; border-radius: 8px; border: 1.5px solid #388E3C;}")
-        self.entry_date = QDateEdit(self)
-        self.entry_date.setDate(QDate.currentDate())
-        self.entry_date.setCalendarPopup(True)
-        self.entry_date.setStyleSheet("QDateEdit {padding: 8px; border-radius: 8px; border: 1.5px solid #388E3C;}")
-        self.cote = QLineEdit()
-        self.cote.setPlaceholderText("Côte")
-        self.cote.setStyleSheet("QLineEdit {padding: 8px; border-radius: 8px; border: 1.5px solid #388E3C;}")
-        self.author = QLineEdit()
-        self.author.setPlaceholderText("Auteur(s)")
-        self.author.setStyleSheet("QLineEdit {padding: 8px; border-radius: 8px; border: 1.5px solid #388E3C;}")
-        self.edition = QLineEdit()
-        self.edition.setPlaceholderText("Edition")
-        self.edition.setStyleSheet("QLineEdit {padding: 8px; border-radius: 8px; border: 1.5px solid #388E3C;}")
-        self.category = QLineEdit()
-        self.category.setPlaceholderText("Catégorie(s)")
-        self.category.setStyleSheet("QLineEdit {padding: 8px; border-radius: 8px; border: 1.5px solid #388E3C;}")
-        self.isbn = QLineEdit()
-        self.isbn.setPlaceholderText("ISBN")
-        self.isbn.setStyleSheet("QLineEdit {padding: 8px; border-radius: 8px; border: 1.5px solid #388E3C;}")
-        self.copies = QLineEdit()
-        self.copies.setPlaceholderText("Nombre d'exemplaires")
-        self.copies.setStyleSheet("QLineEdit {padding: 8px; border-radius: 8px; border: 1.5px solid #388E3C;}")
-
-        layout.addRow("Titre:", self.title)
-        layout.addRow("Numéro d'inventaire:", self.inventory_number)
-        layout.addRow("Date d'entrée:", self.entry_date)
-        layout.addRow("Côte", self.cote)
-        layout.addRow("Auteur:", self.author)
-        layout.addRow("edition:", self.edition)
-        layout.addRow("Catégorie:", self.category)
-        layout.addRow("ISBN:", self.isbn)
-        layout.addRow("Exemplaires:", self.copies)
-        if book:
-            self.title.setText(book[1])
-            self.entry_date.setDate(QDate.fromString(book[2], "yyyy-MM-dd"))
-            self.inventory_number.setText(book[3])
-            self.cote.setText(book[4])
-            self.author.setText(str(book[5]))
-            self.edition.setText(str(book[6]))
-            self.category.setText(str(book[7]))
-            self.isbn.setText(str(book[8]))
-            self.copies.setText(str(book[9]))
-        self.buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
-        self.buttons.button(QDialogButtonBox.Ok).setText("Valider")
-        self.buttons.button(QDialogButtonBox.Cancel).setText("Annuler")
-        self.buttons.setStyleSheet("""
-            QDialogButtonBox QPushButton {
-                background-color: #388E3C;
-                color: white;
-                border-radius: 8px;
-                padding: 8px 24px;
-                font-size: 14px;
-                min-width: 100px;
-            }
-            QDialogButtonBox QPushButton:hover {
-                background-color: #2E7D32;
-            }
-        """)
-        self.buttons.accepted.connect(self.accept)
-        self.buttons.rejected.connect(self.reject)
-        layout.addWidget(self.buttons)
-
-    def get_data(self):
-        return (
-            self.title.text(),
-            self.entry_date.text(),
-            self.inventory_number.text(),
-            self.cote.text(),
-            self.author.text(),
-            self.edition.text(),
-            self.category.text(),
-            self.isbn.text(),
-            self.copies.text()
-        )
 
 class LibrarianWindow(QMainWindow):
     def __init__(self):
@@ -350,9 +197,9 @@ class LibrarianWindow(QMainWindow):
         books_layout.addLayout(search_layout)
 
         # --- Table with details button ---
-        self.books_table = QTableWidget(0, 7)
+        self.books_table = QTableWidget(0, 12)
         self.books_table.setHorizontalHeaderLabels([
-            "ID", "Titre", "Auteur", "Catégorie", "ISBN", "Disponibles", "Détails"
+            "ID", "Date d'entrée", "N. Inventaire", "Côte", "Auteur", "Titre", "Edition", "Catégorie", "ISBN", "Total","Disponibles", "Détails"
         ])
         self.books_table.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.books_table.setFont(QFont("Arial", 10))
@@ -361,10 +208,7 @@ class LibrarianWindow(QMainWindow):
         books_layout.addWidget(self.books_table)
 
         # Load books from controller
-        books = self.bookController.get_all_books()
-        self.books_data = [
-            [book[0], book[5], book[4], book[7], "N/A", book[-1]] for book in books
-        ]
+        self.books_data = self.bookController.get_all_books()
         self.refresh_books_table()
 
         # CRUD Buttons
@@ -542,7 +386,7 @@ class LibrarianWindow(QMainWindow):
                 }
             """)
             btn.clicked.connect(lambda _, b=book: self.show_book_details(b))
-            self.books_table.setCellWidget(row, 6, btn)
+            self.books_table.setCellWidget(row, 11, btn)
 
     def add_book(self):
         dialog = BookDialog(self)
@@ -565,19 +409,53 @@ class LibrarianWindow(QMainWindow):
             QMessageBox.warning(self, "Sélection requise", "Veuillez sélectionner un livre à modifier.")
             return
         book = self.books_data[row]
+        book_id = book[0]
         dialog = BookDialog(self, book)
         if dialog.exec_() == QDialog.Accepted:
-            title, author, category, isbn, copies = dialog.get_data()
-            self.books_data[row] = [book[0], title, author, category, isbn, int(copies)]
-            self.refresh_books_table()
+            reply = QMessageBox.question(
+                self,
+                "Confirmation",
+                "Êtes-vous sûr de vouloir modifier cet utilisateur ?",
+                QMessageBox.Yes | QMessageBox.No,
+                QMessageBox.No
+            )
+            if reply == QMessageBox.Yes:
+                title, entry_date, inventory_number, cote, author, edition, category, isbn, copies = dialog.get_data()
+                if copies.isdigit():
+                    copies = int(copies)
+                    self.bookController.update_book(book_id,{
+                        'title':title, 
+                        'entry_date':entry_date, 
+                        'inventory_number':inventory_number, 
+                        'cote':cote, 
+                        'authors':author, 
+                        'edition':edition, 
+                        'categories':category, 
+                        'isbn':isbn, 
+                        'total_copies':copies
+                    })
+                    self.books_data = self.bookController.get_all_books()
+                    self.refresh_books_table()
+                else:
+                    QMessageBox.critical(self, "Erreur", "Le nombre d'exemplaire doit être un entier")
 
     def delete_book(self):
         row = self.books_table.currentRow()
         if row < 0:
             QMessageBox.warning(self, "Sélection requise", "Veuillez sélectionner un livre à supprimer.")
             return
-        del self.books_data[row]
-        self.refresh_books_table()
+        reply = QMessageBox.question(
+            self,
+            "Confirmation",
+            "Êtes-vous sûr de vouloir supprimer ce livre ?",
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.No
+        )
+        if reply == QMessageBox.Yes:
+            book_id = self.books_data[row][0]
+            self.bookController.delete_book(book_id)
+            self.books_data = self.bookController.get_all_books()
+            self.refresh_books_table()
 
     def search_books(self):
         text = self.book_search_input.text().lower()

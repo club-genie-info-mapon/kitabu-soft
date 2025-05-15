@@ -31,7 +31,7 @@ def create_tables(cursor):
             title TEXT NOT NULL,
             edition TEXT,
             categories TEXT,
-            isbn TEXT UNIQUE,
+            isbn TEXT,
             total_copies INTEGER DEFAULT 1,
             available_copies INTEGER DEFAULT 1
         );
